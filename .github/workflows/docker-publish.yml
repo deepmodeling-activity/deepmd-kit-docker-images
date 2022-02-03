@@ -32,6 +32,6 @@ jobs:
         if: github.event_name == 'push'
 
       - name: Push image to GitHub Container Registry
-        run: docker push ghcr.io/deepmodeling/${IMAGE_NAME}:${VERSION}_${VARIANT}
+        run: docker push ghcr.io/deepmodeling/${IMAGE_NAME}:${VERSION}
         if: github.event_name == 'push'
 
