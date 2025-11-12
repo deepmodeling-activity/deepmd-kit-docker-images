@@ -27,9 +27,9 @@ jobs:
       matrix:
         include:
           - VARIANT: cpu
-            BASE_IMAGE: ubuntu:jammy
+            BASE_IMAGE: ubuntu:24.04
           - VARIANT: cuda129
-            BASE_IMAGE: ubuntu:jammy
+            BASE_IMAGE: ubuntu:24.04
           
     env: 
       VARIANT: ${{ matrix.VARIANT }}
