@@ -16,7 +16,7 @@ on:
 env:
   # TODO: Change variable to your image's name.
   IMAGE_NAME: deepmd-kit
-  VERSION: 3.2.0b0
+  VERSION: 3.2.0
 
 jobs:
   # Run tests.
@@ -25,26 +25,46 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        # GPU installer part counts must match the numbered release assets.
         include:
           - VARIANT: cpu
             BASE_IMAGE: ubuntu:24.04
+            CUDA_VERSION: ""
+            INSTALLER_PARTS: 0
           - VARIANT: cuda129
             BASE_IMAGE: ubuntu:24.04
-          
-    env: 
+            CUDA_VERSION: "12.9"
+            INSTALLER_PARTS: 4
+          - VARIANT: cuda133
+            BASE_IMAGE: ubuntu:24.04
+            CUDA_VERSION: "13.3"
+            INSTALLER_PARTS: 3
+
+    env:
       VARIANT: ${{ matrix.VARIANT }}
       BASE_IMAGE: ${{ matrix.BASE_IMAGE }}
+      CUDA_VERSION: ${{ matrix.CUDA_VERSION }}
+      INSTALLER_PARTS: ${{ matrix.INSTALLER_PARTS }}
 
     steps:
       - name: Delete huge unnecessary tools folder
         uses: jlumbroso/free-disk-space@main
         with:
           tool-cache: true
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Run tests
         run: |
-          docker build --build-arg VARIANT=$VARIANT --build-arg VERSION=$VERSION --build-arg BASE_IMAGE=$BASE_IMAGE --file $IMAGE_NAME/Dockerfile -t ghcr.io/deepmodeling/${IMAGE_NAME}:${VERSION}_${VARIANT} -t deepmodeling/${IMAGE_NAME}:${VERSION}_${VARIANT} .
+          docker build \
+            --build-arg "VARIANT=${VARIANT}" \
+            --build-arg "VERSION=${VERSION}" \
+            --build-arg "BASE_IMAGE=${BASE_IMAGE}" \
+            --build-arg "CUDA_VERSION=${CUDA_VERSION}" \
+            --build-arg "INSTALLER_PARTS=${INSTALLER_PARTS}" \
+            --file "${IMAGE_NAME}/Dockerfile" \
+            -t "ghcr.io/deepmodeling/${IMAGE_NAME}:${VERSION}_${VARIANT}" \
+            -t "deepmodeling/${IMAGE_NAME}:${VERSION}_${VARIANT}" \
+            .
 
       - name: Log into GitHub Container Registry
         run: echo "${{ secrets.CR_PAT }}" | docker login https://ghcr.io -u ${{ github.actor }} --password-stdin
